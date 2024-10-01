@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gpt_frontend/chat_page/genral_chat_page.dart';
+import 'package:gpt_frontend/translate_page/docx_tanslation.dart';
 import 'package:gpt_frontend/translate_page/language_translation.dart';
 import 'package:gpt_frontend/translate_page/pdf_translation.dart';
 import 'package:gpt_frontend/translate_page/test.dart';
@@ -122,7 +123,7 @@ class _TranslateHomeState extends State<TranslateHome> {
   }
 
   void go3() {
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => const Test()));
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => const DocxTanslation()));
   }
 }
