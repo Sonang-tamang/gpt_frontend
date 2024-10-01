@@ -95,7 +95,6 @@ class _TranslateHomeState extends State<TranslateHome> {
               focusColor: Colors.blue,
               child: Card(
                 elevation: 50,
-                // color: Colors.red,
                 child: Center(
                   child: Text("DOCX Translation",
                       style: TextStyle(
