@@ -9,14 +9,6 @@ class GenralChatPage extends StatefulWidget {
 }
 
 class _GenralChatPageState extends State<GenralChatPage> {
-//chat users for AI#######################################################################
-
-  // List<String> messages = [];
-  // TextEditingController _controller = TextEditingController();
-
-  // ChatUser currentUser = ChatUser(id: "0", firstName: "User");
-  // ChatUser aiUser = ChatUser(id: "1", firstName: "RAN Ai");
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,12 +19,61 @@ class _GenralChatPageState extends State<GenralChatPage> {
         title: const Text(
           "General Chat Mode",
           style: TextStyle(
-              fontSize: 23,
-              fontWeight: FontWeight.bold,
-              color: Color.fromARGB(255, 226, 229, 234)),
+            fontSize: 23,
+            fontWeight: FontWeight.bold,
+            color: Color.fromARGB(255, 226, 229, 234),
+          ),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back to the previous page
+          },
+        ),
+        actions: [
+          Builder(
+            builder: (context) => IconButton(
+              icon: Icon(Icons.menu), // This will open the drawer
+              onPressed: () {
+                Scaffold.of(context).openEndDrawer(); // Opens the drawer
+              },
+            ),
+          ),
+        ],
+      ),
+      endDrawer: Drawer(
+        child: ListView(
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('Home'),
+              onTap: () {
+                Navigator.pop(context); // Closes the drawer
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text('Settings'),
+              onTap: () {
+                Navigator.pop(context); // Closes the drawer
+              },
+            ),
+            // Add more items here
+          ],
         ),
       ),
-      drawer: const Drawer(),
       body: Column(
         children: [
           SizedBox(

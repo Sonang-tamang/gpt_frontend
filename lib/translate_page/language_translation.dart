@@ -21,7 +21,7 @@ class _LanguageTranslationState extends State<LanguageTranslation> {
   bool isEnglish = true;
 
   Future<void> _sendTranslationRequest() async {
-    final url = Uri.parse('http://192.168.171.111:8000/api/translate/');
+    final url = Uri.parse('http://192.168.17.111:8000/api/translate/');
     final userInputText = _textController.text;
 
     if (userInputText.isEmpty) {
@@ -110,7 +110,7 @@ class _LanguageTranslationState extends State<LanguageTranslation> {
               ),
               child: _isLoading
                   ? CircularProgressIndicator(
-                      color: const Color.fromARGB(255, 55, 50, 50))
+                      color: const Color.fromARGB(255, 255, 255, 255))
                   : Text(
                       'Translate',
                       style: TextStyle(

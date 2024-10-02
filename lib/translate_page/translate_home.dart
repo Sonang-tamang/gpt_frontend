@@ -21,7 +21,7 @@ class _TranslateHomeState extends State<TranslateHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 132, 169, 185),
+      backgroundColor: const Color.fromARGB(255, 200, 208, 212),
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
         centerTitle: true,
@@ -47,38 +47,46 @@ class _TranslateHomeState extends State<TranslateHome> {
                 textAlign: TextAlign.center),
           ),
           SizedBox(
-            height: 90,
+            height: 140,
           ),
           SizedBox(
-            height: 150,
+            height: 120,
             width: 380,
             child: InkWell(
+              borderRadius: BorderRadius.circular(40),
               onTap: go,
               child: Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(40)),
                 elevation: 50,
-                //  color: Colors.red,
+                color: const Color.fromARGB(255, 102, 97, 97),
                 child: Center(
                   child: Text("Language Translation",
                       style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
-                          fontFamily: GoogleFonts.poppins().fontFamily),
+                          fontFamily: GoogleFonts.poppins().fontFamily,
+                          color: Colors.white),
                       textAlign: TextAlign.center),
                 ),
               ),
             ),
           ),
           SizedBox(
-            height: 150,
+            height: 120,
             width: 380,
             child: InkWell(
+              borderRadius: BorderRadius.circular(40),
               onTap: go2,
               child: Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(40)),
                 elevation: 50,
-                //  color: Colors.red,
+                color: Colors.red,
                 child: Center(
                   child: Text("PDF Translation",
                       style: TextStyle(
+                          color: Colors.white,
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
                           fontFamily: GoogleFonts.poppins().fontFamily),
@@ -88,19 +96,24 @@ class _TranslateHomeState extends State<TranslateHome> {
             ),
           ),
           SizedBox(
-            height: 150,
+            height: 120,
             width: 380,
             child: InkWell(
+              borderRadius: BorderRadius.circular(40),
               onTap: go3,
-              focusColor: Colors.blue,
+              // focusColor: Colors.blue,
               child: Card(
+                color: Colors.brown,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(40)),
                 elevation: 50,
                 child: Center(
                   child: Text("DOCX Translation",
                       style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.bold,
-                          fontFamily: GoogleFonts.poppins().fontFamily),
+                          fontFamily: GoogleFonts.poppins().fontFamily,
+                          color: Colors.white),
                       textAlign: TextAlign.center),
                 ),
               ),
