@@ -1,8 +1,11 @@
 // ignore_for_file: prefer_const_constructors, unused_import
 
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:gpt_frontend/components/switch_button.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:file_picker/file_picker.dart';
@@ -20,14 +23,14 @@ class DocxTranslation2 extends StatefulWidget {
 
 class _DocxTranslationState extends State<DocxTranslation2> {
   List<File> pickedFiles = [];
-
   List<File> translatedFiles = [];
 
-// defult loding###########################################################
   bool _isLoading = false;
+  String _loadingMessage = "";
+  bool isEnglish = true;
 
-  // Method to pick fils #######################################################################
-  pickFiles() async {
+  // Method to pick files
+  Future<void> pickFiles() async {
     var result = await FilePicker.platform.pickFiles(
       allowMultiple: true,
       type: FileType.custom,
@@ -41,66 +44,79 @@ class _DocxTranslationState extends State<DocxTranslation2> {
     }
   }
 
-  openFile(File file) async {
-    OpenFile.open(file.path);
+  // Open a file
+  Future<void> openFile(File file) async {
     var result = await OpenFile.open(file.path);
     print(result.message);
   }
-  // Print any error message
 
+  // Method to translate files
   Future<void> translateFiles() async {
     if (pickedFiles.isEmpty) return;
+
+    setState(() {
+      _isLoading = true;
+      _loadingMessage = "Translating..."; // Initially show "Sending..."
+    });
 
     try {
       for (var file in pickedFiles) {
         print('Sending file: ${file.path}');
 
-        // Prepare the multipart request
         var url = Uri.parse("http://192.168.17.111:8000/api/translate_docx/");
         var request = http.MultipartRequest('POST', url);
 
-        // Add the file as part of the request
         request.files.add(await http.MultipartFile.fromPath(
-          'file', // Make sure this is the correct field name expected by the API
+          'file',
           file.path,
           contentType: MediaType('application',
               'vnd.openxmlformats-officedocument.wordprocessingml.document'),
         ));
 
-        request.fields['source_language'] = 'ne'; // Source language
-        request.fields['target_language'] = 'en'; // Target language
+        request.fields['source_language'] = isEnglish ? 'en' : 'ne';
+        request.fields['target_language'] = isEnglish ? 'ne' : 'en';
 
-        // Send the request to the API
+//for debuging###################################################################################
+        print(
+            'Requesting translation from ${isEnglish ? 'English' : 'Nepali'} to ${isEnglish ? 'Nepali' : 'English'}');
+
+// onLanguageChanged: (isEnglishSelected) {
+//   print("Language switched: ${isEnglishSelected ? 'English' : 'Nepali'}");
+//   setState(() {
+//     isEnglish = isEnglishSelected;
+//   });
+// },
+
         var response = await request.send();
 
-        // Handle the response
         if (response.statusCode == 200) {
-          print('File translated successfully!');
+          setState(() {
+            _loadingMessage = "File sent, Translating...";
+          });
+
           var responseData = await http.Response.fromStream(response);
 
-          // Save the translated file locally
           Directory tempDir = await getTemporaryDirectory();
           String filePath =
               '${tempDir.path}/translated_${p.basename(file.path)}';
           File translatedFile = File(filePath);
 
-          await translatedFile
-              .writeAsBytes(responseData.bodyBytes); // Write file bytes
-          print('Translated file saved at: $filePath');
+          await translatedFile.writeAsBytes(responseData.bodyBytes);
 
-          // Add translated file to the list and update UI
           setState(() {
             translatedFiles.add(translatedFile);
           });
         } else {
           print(
               'Failed to translate file. Status code: ${response.statusCode}');
-          var responseData = await http.Response.fromStream(response);
-          print('Response body: ${responseData.body}');
         }
       }
     } catch (e) {
       print('Error while translating files: $e');
+      setState(() {
+        _loadingMessage =
+            'Error while translating file. Please try again later.';
+      });
     } finally {
       setState(() {
         _isLoading = false;
@@ -108,44 +124,36 @@ class _DocxTranslationState extends State<DocxTranslation2> {
     }
   }
 
+  // Method to download the translated file
   Future<void> downloadTranslatedFile(File translatedFile) async {
-    // Check and request storage permission
     var status = await Permission.storage.request();
 
     if (status.isGranted) {
       try {
-        // Get the download directory on Android
         Directory? downloadsDir = Directory('/storage/emulated/0/Download');
         if (!downloadsDir.existsSync()) {
           downloadsDir.createSync();
         }
 
-        // Create new file path
         String newFilePath =
             '${downloadsDir.path}/translated_${p.basename(translatedFile.path)}';
-
-        // Write the file
         File newFile = File(newFilePath);
         await newFile.writeAsBytes(await translatedFile.readAsBytes());
 
-        // Notify user of successful download
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('File downloaded to Downloads folder'),
         ));
       } catch (e) {
-        // Handle any errors during file writing
         print('Error saving file: $e');
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Error downloading file: $e'),
         ));
       }
     } else if (status.isDenied) {
-      // If permission is denied, show an error message
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Storage permission denied'),
       ));
     } else if (status.isPermanentlyDenied) {
-      // If permission is permanently denied, prompt user to go to settings
       openAppSettings();
     }
   }
@@ -220,8 +228,7 @@ class _DocxTranslationState extends State<DocxTranslation2> {
                                 child: Text(
                                   "File: ${p.basename(pickedFiles[index].path)}",
                                   style: TextStyle(
-                                      color: const Color.fromARGB(
-                                          255, 255, 255, 255),
+                                      color: Colors.white,
                                       fontFamily:
                                           GoogleFonts.poppins().fontFamily,
                                       fontWeight: FontWeight.bold,
@@ -236,21 +243,19 @@ class _DocxTranslationState extends State<DocxTranslation2> {
                   )
                 : Container(),
             SizedBox(height: 30),
-            SizedBox(
-              height: 50,
-              width: 200,
-              child: InkWell(
-                onTap: translateFiles, // Call translateFiles on tap
-                child: Card(
-                  color: const Color.fromARGB(255, 80, 74, 74),
-                  child: Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _isLoading
-                            ? CircularProgressIndicator(
-                                color: const Color.fromARGB(255, 255, 255, 255))
-                            : Text(
+            translatedFiles.isEmpty
+                ? SizedBox(
+                    height: 50,
+                    width: 200,
+                    child: InkWell(
+                      onTap: translateFiles,
+                      child: Card(
+                        color: const Color.fromARGB(255, 80, 74, 74),
+                        child: Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
                                 'Translate',
                                 style: TextStyle(
                                     color: Colors.white,
@@ -258,19 +263,54 @@ class _DocxTranslationState extends State<DocxTranslation2> {
                                     fontFamily:
                                         GoogleFonts.poppins().fontFamily),
                               ),
-                        Icon(
-                          Icons.swap_vert,
-                          color: Colors.white,
-                          size: 30,
+                              Icon(
+                                Icons.swap_vert,
+                                color: Colors.white,
+                                size: 30,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                : Container(),
+            SizedBox(height: 5),
+            SwitchButton(
+              onLanguageChanged: (isEnglishSelected) {
+                setState(() {
+                  isEnglish = isEnglishSelected;
+                });
+              },
+            ),
+            if (_isLoading)
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                child: Container(
+                  color: Colors.black.withOpacity(0.5),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          _loadingMessage,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        SpinKitChasingDots(
+                          color: const Color.fromARGB(255, 74, 68, 68),
+                          size: 60,
                         ),
                       ],
                     ),
                   ),
                 ),
               ),
-            ),
             SizedBox(height: 30),
-            // Display the translated files and download button
             translatedFiles.isNotEmpty
                 ? ListView.builder(
                     itemCount: translatedFiles.length,
@@ -282,14 +322,15 @@ class _DocxTranslationState extends State<DocxTranslation2> {
                         child: Card(
                           color: const Color.fromARGB(255, 74, 80, 80),
                           child: ListTile(
-                            leading: Icon(Icons.download, color: Colors.white),
+                            leading: Icon(
+                              Icons.file_download,
+                              color: Colors.white,
+                            ),
                             title: Text(
-                              "Download: ${p.basename(translatedFiles[index].path)}",
+                              'Download Translated File',
                               style: TextStyle(
                                   color: Colors.white,
-                                  fontFamily: GoogleFonts.poppins().fontFamily,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15),
+                                  fontFamily: GoogleFonts.poppins().fontFamily),
                             ),
                           ),
                         ),
@@ -300,38 +341,40 @@ class _DocxTranslationState extends State<DocxTranslation2> {
             SizedBox(height: 30),
             // Container for output display
             SizedBox(
-              height: 160,
+              height: 120,
               width: 350,
-              child: Card(
-                color: Colors.white,
-                child: translatedFiles.isNotEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: ListView.builder(
-                          itemCount: translatedFiles.length,
-                          itemBuilder: (context, index) {
-                            return ListTile(
-                              title: Text(
-                                'Translated File: ${p.basename(translatedFiles[index].path)}',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily:
-                                        GoogleFonts.poppins().fontFamily),
-                              ),
-                            );
-                          },
-                        ),
-                      )
-                    : Center(
-                        child: Text(
-                          "No Translated Files Available",
-                          style: TextStyle(
-                              fontFamily: GoogleFonts.poppins().fontFamily,
-                              fontWeight: FontWeight.bold),
-                        ),
+              child: translatedFiles.isNotEmpty
+                  ? InkWell(
+                      child: Card(
+                          color: Colors.white,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ListView.builder(
+                              itemCount: translatedFiles.length,
+                              itemBuilder: (context, index) {
+                                return ListTile(
+                                  onTap: () => openFile(pickedFiles[index]),
+                                  title: Text(
+                                    'Translated File: ${p.basename(translatedFiles[index].path)}',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily:
+                                            GoogleFonts.poppins().fontFamily),
+                                  ),
+                                );
+                              },
+                            ),
+                          )),
+                    )
+                  : Center(
+                      child: Text(
+                        "No Translated Files Available",
+                        style: TextStyle(
+                            fontFamily: GoogleFonts.poppins().fontFamily,
+                            fontWeight: FontWeight.bold),
                       ),
-              ),
-            ),
+                    ),
+            )
           ],
         ),
       ),
@@ -339,18 +382,9 @@ class _DocxTranslationState extends State<DocxTranslation2> {
   }
 }
 
-Icon returnLogo(File file) {
-  var ex = p.extension(file.path);
-
-  if (ex == ".docx") {
-    return Icon(
-      Icons.insert_drive_file,
-      color: const Color.fromARGB(255, 255, 255, 255),
-    );
-  } else {
-    return Icon(
-      Icons.question_mark_outlined,
-      color: Colors.black,
-    );
-  }
+Widget returnLogo(File file) {
+  return Icon(
+    Icons.description,
+    color: Colors.white,
+  );
 }

@@ -16,17 +16,27 @@ class Welcome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          'Welcome Page',
-          style: TextStyle(fontSize: 30),
-        ),
-      ),
+      // appBar: AppBar(
+      //   centerTitle: true,
+      //   title: Text(
+      //     'Welcome Page',
+      //     style: TextStyle(fontSize: 30),
+      //   ),
+      // ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
+          children: [
+            // Container(
+            //   height: 100,
+            //   width: 100,
+            //   child: Image.asset(
+            //     "images/ai.png",
+            //   ),
+            // ),
+            SizedBox(
+              height: 20,
+            ),
             AnimatedTextKit(
               animatedTexts: [
                 TypewriterAnimatedText(
